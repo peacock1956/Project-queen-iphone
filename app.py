@@ -9,9 +9,9 @@ st.caption('PROJECT QUEEN • Private beta • iPhone edition')
 st.info('Prototype: chats stay in this browser session only. No permanent memory yet. Messages sent to the AI provider for processing.')
 
 try:
-    key = st.secrets['OPENAI_API_KEY']
+    key = st.secrets['st.secrets['GROQ_API_KEY']']
 except (KeyError, FileNotFoundError):
-    key = os.environ.get('OPENAI_API_KEY')
+    key = os.environ.get('os.environ.get('GROQ_API_KEY')')
 if not key:
     st.error('The owner must configure OPENAI_API_KEY in the hosting service secrets before QUEEN can respond.')
     st.stop()
@@ -36,9 +36,9 @@ if prompt := st.chat_input('Talk to QUEEN…'):
         st.markdown(prompt)
     with st.chat_message('assistant'):
         try:
-            client = OpenAI(api_key=key, timeout=30.0)
+             client = OpenAI(api_key=key, base_url="https://api.groq.com/openai/v1", timeout=30.0)
             recent = st.session_state.messages[-20:]
-            response = client.chat.completions.create(model='gpt-4.1-mini', messages=[{'role':'system','content':SYSTEM}, *recent], max_tokens=700)
+            response = client.chat.completions.create(model= 'model='llama-3.3-70b-versatile'', messages=[{'role':'system','content':SYSTEM}, *recent], max_tokens=700)
             answer = response.choices[0].message.content or 'No response received.'
             st.markdown(answer)
             st.session_state.messages.append({'role':'assistant','content':answer})
