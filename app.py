@@ -11,7 +11,7 @@ st.info('Prototype: chats stay in this browser session only. No permanent memory
 try:
     key = key = st.secrets['GROQ_API_KEY']
 except (KeyError, FileNotFoundError):
-    key = os.environ.get('os.environ.get('GROQ_API_KEY')')
+    key = os.environ.get('GROQ_API_KEY')
 if not key:
     st.error('The owner must configure OPENAI_API_KEY in the hosting service secrets before QUEEN can respond.')
     st.stop()
