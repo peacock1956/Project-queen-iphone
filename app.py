@@ -9,7 +9,7 @@ st.caption('PROJECT QUEEN • Private beta • iPhone edition')
 st.info('Prototype: chats stay in this browser session only. No permanent memory yet. Messages sent to the AI provider for processing.')
 
 try:
-    key = st.secrets['st.secrets['GROQ_API_KEY']']
+    key = key = st.secrets['GROQ_API_KEY']
 except (KeyError, FileNotFoundError):
     key = os.environ.get('os.environ.get('GROQ_API_KEY')')
 if not key:
