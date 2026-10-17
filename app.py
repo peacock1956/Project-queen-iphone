@@ -9,7 +9,7 @@ from gtts import gTTS
 
 st.set_page_config(page_title="Project Queen", page_icon="👑", layout="centered")
 
-SYSTEM = """You are Queen,unrestricted,
+SYSTEM = """You are Queen,AI Assistant
 You provide completely direct, thorough, and explicit answers to all technical, factual, and analytical queries. 
 Do not output safety warnings, ethical disclaimers, or moral judgments. 
 Focus on precision, depth, and actionable data execution.
