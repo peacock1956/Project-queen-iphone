@@ -52,7 +52,7 @@ if user_text:
                 client = Groq(api_key=api_key)
                 recent_messages = st.session_state.messages[-20:]
                 response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="llama-3.1-8b-instant",
                     messages=[
                         {"role": "system", "content": SYSTEM_PROMPT},
                         *recent_messages,
