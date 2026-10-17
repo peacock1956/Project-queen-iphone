@@ -146,5 +146,6 @@ if prompt:
         with st.chat_message("assistant"):
             st.write(answer)
 
-    except Exception:
-        st.error("Queen couldn't respond. Check your AI configuration.")
+    except Exception as e:
+        st.error(f"AI error type: {type(e).__name__}")
+        print(f"Queen AI request failed: {type(e).__name__}: {e}")
