@@ -1,53 +1,67 @@
 import os
-import streamlit as st
-from openai import OpenAI
 
-st.set_page_config(page_title='QUEEN AI', page_icon='👑', layout='centered')
-st.markdown('''<style>.block-container{max-width:720px;padding-top:2rem} h1{letter-spacing:.06em} .stChatMessage{border-radius:18px}</style>''', unsafe_allow_html=True)
-st.title('👑 QUEEN AI')
-st.caption('PROJECT QUEEN • Private beta • iPhone edition')
-st.info('Prototype: chats stay in this browser session only. No permanent memory yet. Messages sent to the AI provider for processing.')
+import streamlit as st
+from groq import Groq
+
+st.set_page_config(page_title="PROJECT QUEEN", page_icon="👑", layout="centered")
+
+SYSTEM_PROMPT = """You are PROJECT QUEEN, a helpful, confident, respectful personal AI assistant.
+Be warm, direct, practical, and truthful. Help with creative projects, writing,
+planning, technical troubleshooting, and everyday questions. Ask for clarification
+when essential, and never claim to have completed actions you have not performed.
+"""
+
+st.title("👑 PROJECT QUEEN")
+st.caption("Your personal AI assistant")
 
 try:
-    key = st.secrets['GROQ_API_KEY']
-except (KeyError, FileNotFoundError):
-    key = os.environ.get('GROQ_API_KEY')
-if not key:
-    st.error('The owner must configure OPENAI_API_KEY in the hosting service secrets before QUEEN can respond.')
-    st.stop()
+    api_key = st.secrets.get("GROQ_API_KEY", "")
+except Exception:
+    api_key = ""
+api_key = api_key or os.environ.get("GROQ_API_KEY", "")
 
-SYSTEM = '''You are QUEEN, a thoughtful, capable personal AI assistant for the owner of BARNONE, TMI (Tantalize My Intellect), and Circon Entertainment. Be articulate, warm, professional, direct, and resourceful. Help with creative writing, business planning, learning AI, and practical workflows. Do not claim human consciousness, physical presence, persistent memory, or actions you did not take. Ask permission before any consequential external action. Be clear about uncertainty. Never request or reveal passwords or API keys.'''
-if 'messages' not in st.session_state:
+if "messages" not in st.session_state:
     st.session_state.messages = []
+
 with st.sidebar:
-    st.header('QUEEN Controls')
-    st.write('Model: gpt-4.1-mini')
-    if st.button('Start new conversation'):
+    st.header("Settings")
+    if st.button("🗑️ Clear conversation", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    st.download_button('Export this chat', data='\n\n'.join(f"{m['role'].upper()}: {m['content']}" for m in st.session_state.messages), file_name='queen_chat.txt', mime='text/plain')
-    st.caption('Access control: keep your app private or add authentication before sharing its URL. API requests can incur charges.')
-for msg in st.session_state.messages:
-    with st.chat_message(msg['role']):
-        st.markdown(msg['content'])
-if prompt := st.chat_input('Talk to QUEEN…'):
-    st.session_state.messages.append({'role':'user','content':prompt})
-    with st.chat_message('user'):
-        st.markdown(prompt)
-    with st.chat_message('assistant'):
-        try:
-            client = OpenAI(api_key=key, base_url="https://api.groq.com/openai/v1", timeout=30.0)
-            recent = st.session_state.messages[-20:]
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": SYSTEM},
-                    *recent
-                ],
-                max_tokens=700
-            )
-            answer = response.choices[0].message.content or 'No response received.'
+    st.caption("Chats are kept only in this browser session; they are not saved permanently.")
+    st.caption("API key: " + ("configured" if api_key else "missing"))
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if not api_key:
+    st.warning('Add GROQ_API_KEY in your Streamlit app settings → Secrets, then restart the app.')
+    st.code('GROQ_API_KEY = "your_groq_api_key_here"', language="toml")
+    st.stop()
+
+user_text = st.chat_input("Talk to Queen...")
+if user_text:
+    st.session_state.messages.append({"role": "user", "content": user_text})
+    with st.chat_message("user"):
+        st.markdown(user_text)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Queen is thinking..."):
+            try:
+                client = Groq(api_key=api_key)
+                recent_messages = st.session_state.messages[-20:]
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        *recent_messages,
+                    ],
+                    temperature=0.7,
+                    max_tokens=800,
+                )
+                answer = response.choices[0].message.content or "I couldn't generate a reply. Please try again."
+            except Exception as exc:
+                answer = f"I couldn't reach the AI service. Check your Groq key, model access, and usage limits. Details: {exc}"
             st.markdown(answer)
-            st.session_state.messages.append({'role':'assistant','content':answer})
-        except Exception:
-            st.error('QUEEN could not connect. Check the cloud API key, billing, and service availability. Do not paste your key into chat.')
+    st.session_state.messages.append({"role": "assistant", "content": answer})
