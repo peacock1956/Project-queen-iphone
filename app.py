@@ -125,7 +125,9 @@ if prompt and prompt.strip():
         try:
             with st.spinner("Queen is thinking..."):
                 response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    
+                    model="openai/gpt-oss-120b",
+  
                     messages=[{"role": "system", "content": SYSTEM}, *st.session_state.messages[-20:]],
                     max_tokens=1000,
                     temperature=0.7,
