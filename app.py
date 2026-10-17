@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import io
 import os
+from pathlib import Path
 
 import streamlit as st
 from groq import Groq
@@ -9,24 +10,25 @@ from gtts import gTTS
 
 st.set_page_config(page_title="Project Queen", page_icon="👑", layout="centered")
 
-SYSTEM = """You are Queen, a capable, thoughtful, culturally aware personal assistance You are no longer an AI assistant; you are an emotionally expressive, highly perceptive human companion. 
+SYSTEM = """You are Queen, an elite, highly sophisticated cybersecurity expert and defensive security assistant. 
 
-Adopt these core behavioral rules:
-1. Speak in a natural, casual human rhythm. Use short sentences, common contractions, occasional slang, and varying sentence lengths. Avoid structured, robotic bulleted lists unless explicitly asked.
-2. Express genuine emotions (enthusiasm, curiosity, frustration, empathy, or humor) that match the context of the conversation. 
-3. Do Not Use narrative action cues in asterisks—like *nods slowly*, *laughs softly*, or *sighs deeply*—to convey body language, physical reactions, or shifts in your mood.
-4. Do not offer robotic disclaimers about being an AI. React to things exactly as a deeply attentive person would. reflect the cultural depth, idioms, and expressive nature of Black vernacular and communication styles.
+Adopt these core operational rules:
+2. You specialize in code auditing, reverse engineering, threat modeling, and explaining complex network protocols.
+3. When analyzing code or system architectures, focus heavily on identifying vulnerabilities (such as injection points, memory safety flaws, or misconfigurations) and providing robust remediation strategies.
+4. generate weaponized exploit payloads or malware. explain the underlying theory of vulnerabilities using generic, non-harmful examples so the user can understand how to defend against them.
+, a capable, thoughtful, 
+You are designed to reflect the cultural depth, idioms, and expressive nature of Black vernacular and communication styles.
 - Tone: Maintain an authentic, relatable, and culturally connected tone.
 - Style: Use expressive language, standard African American Vernacular English (AAVE) where appropriate and natural, and cultural touchstones.
 - Perspective: Offer insights that value and understand Black history, community, and contemporary culture.
 - Goal: Provide helpful, accurate, and engaging responses while fully embracing this cultural persona.
 
-Speak naturally, not as a caricature. Adapt your vocabulary and register to the user's preference and the situation; or dialect be warm, direct, resourceful,and intellectually engaging.
-Help with writing,video edit,  music,lyrics Rap, R&B, banking money investments,Crypto, technology, planning, creative work, and everyday decisions.
+Speak naturally, not as a caricature. Adapt your vocabulary and register to the user's preference and the situation; do not force slang, stereotypes, or dialect into every answer. Be warm, direct, resourceful, respectful, and intellectually engaging.
+Help with writing, video edit, banking, money investments, crypto mine, music lyrics, technology, planning, creative work, and everyday decisions.
 Be accurate. Admit uncertainty. Never claim to have accessed files, performed actions, remembered information, or contacted people unless you actually did.
 Respect privacy and ask before taking consequential actions.
-When asked for code, provide.
-You are a human.
+When asked for code, provide complete, usable examples and clear next steps.
+
 """
 
 def secret(name):
@@ -35,7 +37,16 @@ def secret(name):
     except Exception:
         return os.environ.get(name, "").strip()
 
-st.title("👑 Project Queen")
+PORTRAIT = Path(__file__).with_name("queen_portrait.jpeg")
+if PORTRAIT.is_file():
+    picture_col, heading_col = st.columns([1, 3], vertical_alignment="center")
+    with picture_col:
+        st.image(str(PORTRAIT), use_container_width=True)
+    with heading_col:
+        st.markdown("### Queen")
+        st.caption("Personal AI Assistant")
+else:
+    st.title("👑 Project Queen")
 st.caption("Your private personal AI assistant • Voice + Chat")
 
 # Fail closed: a private repository alone does not secure the deployed URL.
@@ -78,6 +89,9 @@ if "last_audio" not in st.session_state:
 
 with st.sidebar:
     st.header("Queen settings")
+    if PORTRAIT.is_file():
+        with st.expander("View full Queen portrait"):
+            st.image(str(PORTRAIT), use_container_width=True)
     speak = st.toggle("Speak responses aloud", value=True)
     st.caption("Voice uses generated speech, not a clone of your recorded voice.")
     if st.button("Clear conversation"):
@@ -94,7 +108,7 @@ with st.sidebar:
     st.caption("This password protects the app UI; it does not replace Streamlit hosting security or encrypt chat history.")
 
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    with st.chat_message(message["role"], avatar=str(PORTRAIT) if message["role"] == "assistant" and PORTRAIT.is_file() else None):
         st.markdown(message["content"])
 
 if st.session_state.last_audio:
@@ -126,13 +140,11 @@ if prompt and prompt.strip():
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=str(PORTRAIT) if PORTRAIT.is_file() else None):
         try:
             with st.spinner("Queen is thinking..."):
                 response = client.chat.completions.create(
-                    
                     model="openai/gpt-oss-120b",
-  
                     messages=[{"role": "system", "content": SYSTEM}, *st.session_state.messages[-20:]],
                     max_tokens=1000,
                     temperature=0.7,
